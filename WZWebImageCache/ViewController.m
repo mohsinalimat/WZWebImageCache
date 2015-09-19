@@ -11,7 +11,11 @@
 
 @interface ViewController ()
 
-@property (weak, nonatomic) IBOutlet UIImageView *imageView;
+@property (weak, nonatomic) IBOutlet UIImageView *imageView1;
+@property (weak, nonatomic) IBOutlet UIImageView *imageView2;
+@property (weak, nonatomic) IBOutlet UIImageView *imageView3;
+@property (weak, nonatomic) IBOutlet UIImageView *imageView4;
+
 @end
 
 @implementation ViewController
@@ -19,17 +23,56 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    NSURL *URL = [NSURL URLWithString:@"http://img3.qianzhan123.com/news/201509/16/20150916-9ccb63cba06e5872_600x5000.jpeg"];
+    NSURL *URL1 = [NSURL URLWithString:@"http://img3.qianzhan123.com/news/201509/16/20150916-9ccb63cba06e5872_600x5000.jpeg"];
+    NSURL *URL2 = [NSURL URLWithString:@"http://www.hinews.cn/pic/0/17/79/96/17799649_713076.jpg"];
+    NSURL *URL3 = [NSURL URLWithString:@"http://www.123meiyan.com/sysimg/allimg/150814/20_150814153153_1.jpg"];
     
-    [[WZImageManager sharedManager] fetchImageWithURL:URL
+    WZImageManagerFetchOperation* op1 = [[WZImageManager sharedManager] fetchImageWithURL:URL1
                                            decompress:NO
                                              progress:^(CGFloat receivedLength, CGFloat expectedLength) {
                                                  NSLog(@"receivedLength is %g", receivedLength);
     } success:^(UIImage *image, NSError *error) {
         if (!error) {
-            self.imageView.image = image;
+            self.imageView1.image = image;
         }
     } failure:nil];
+    
+    [op1 cancelFetch];
+    
+    WZImageManagerFetchOperation* op2 = [[WZImageManager sharedManager] fetchImageWithURL:URL1
+                                                                               decompress:NO
+                                                                                 progress:^(CGFloat receivedLength, CGFloat expectedLength) {
+                                                                                     NSLog(@"receivedLength is %g", receivedLength);
+                                                                                 } success:^(UIImage *image, NSError *error) {
+                                                                                     if (!error) {
+                                                                                         self.imageView2.image = image;
+                                                                                     }
+                                                                                 } failure:nil];
+    
+    //[op2 cancelFetch];
+    
+    WZImageManagerFetchOperation* op3 = [[WZImageManager sharedManager] fetchImageWithURL:URL2
+                                                                               decompress:NO
+                                                                                 progress:^(CGFloat receivedLength, CGFloat expectedLength) {
+                                                                                     NSLog(@"receivedLength is %g", receivedLength);
+                                                                                 } success:^(UIImage *image, NSError *error) {
+                                                                                     if (!error) {
+                                                                                         self.imageView3.image = image;
+                                                                                     }
+                                                                                 } failure:nil];
+    
+    WZImageManagerFetchOperation* op4 = [[WZImageManager sharedManager] fetchImageWithURL:URL3
+                                                                               decompress:NO
+                                                                                 progress:^(CGFloat receivedLength, CGFloat expectedLength) {
+                                                                                     NSLog(@"receivedLength is %g", receivedLength);
+                                                                                 } success:^(UIImage *image, NSError *error) {
+                                                                                     if (!error) {
+                                                                                         self.imageView4.image = image;
+                                                                                     }
+                                                                                 } failure:nil];
+    
+    
+    
 }
 
 - (void)didReceiveMemoryWarning {

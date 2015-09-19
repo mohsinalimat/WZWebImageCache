@@ -17,6 +17,8 @@
 
 - (instancetype)initWithConcurrentCapacity:(NSUInteger)count;
 
+
+- (void)addOperation:(WZImageDownloadOperation *)operation;
 - (WZImageDownloadOperation *)addTask:(NSURL *)imageURL
                              progress:(WZImageDownloadProgressBlock)progressBlock
                               success:(WZImageDownloadSuccessBlock)successBlock

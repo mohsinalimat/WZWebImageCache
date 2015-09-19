@@ -11,6 +11,30 @@
 #import "WZImageDownloader.h"
 #import "UIImage+Data.h"
 
+@interface WZImageManagerFetchOperation()
+@property (nonatomic, assign, readwrite) BOOL isCancelled;
+@property (nonatomic, strong) WZImageDownloadOperation *downloadOperation;
+@end
+
+@implementation WZImageManagerFetchOperation
+
+- (instancetype)initWithOperation:(WZImageDownloadOperation *)operation
+{
+    self = [super init];
+    if (self) {
+        self.downloadOperation = operation;
+    }
+    return self;
+}
+
+- (void)cancelFetch
+{
+    self.isCancelled = YES;
+    [self.downloadOperation cancelDownload];
+}
+
+@end
+
 @implementation WZImageManager
 
 + (WZImageManager *)sharedManager
@@ -24,22 +48,33 @@
     return manager;
 }
 
-- (void)fetchImageWithURL:(NSURL *)URL
+- (WZImageManagerFetchOperation *)fetchImageWithURL:(NSURL *)URL
                decompress:(BOOL)decompress
                progress:(WZImageDownloadProgressBlock)progress
                   success:(WZImageFetchCompletionBlock)completion
                   failure:(WZImageDownloadFailureBlock)failure
 {
-    UIImage *image = [[WZImageCache sharedImageCache] getImageForKey:URL.absoluteString];
-    if (image) {
-        if (completion) {
-            completion(image, nil);
-            return;
+    WZImageManagerFetchOperation *fetchOperation = [WZImageManagerFetchOperation new];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        if (!fetchOperation.isCancelled) {
+            UIImage *image = [[WZImageCache sharedImageCache] getImageForKey:URL.absoluteString];
+            if (image) {
+                if (completion) {
+                    if (!fetchOperation.isCancelled) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            completion(image, nil);
+                        });
+                    }
+                }
+            } else {
+                [[WZImageDownloader sharedDownloader] addOperation:fetchOperation.downloadOperation];
+            }
         }
-    }
+    });
     
     // Fallback to download
-    [[WZImageDownloader sharedDownloader] addTask:URL
+    WZImageDownloadOperation *operation = [[WZImageDownloadOperation alloc]  initWithImageURL:URL
                                          progress:progress
                                           success:^(NSData *data) {
                                               UIImage *image = [UIImage imageWithData:data];
@@ -51,6 +86,9 @@
                                                                                }];
                                               if (completion) completion(decodedImage, nil);
                                           } failure:failure];
+    fetchOperation.downloadOperation = operation;
+    
+    return fetchOperation;
 }
 
 - (void)reset

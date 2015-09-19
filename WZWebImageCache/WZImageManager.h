@@ -9,12 +9,19 @@
 #import <Foundation/Foundation.h>
 #import "WZImageDownloader.h"
 
+@interface WZImageManagerFetchOperation : NSObject
+@property (nonatomic, assign, readonly) BOOL isCancelled;
+
+- (instancetype)initWithOperation:(WZImageDownloadOperation *)operation;
+- (void)cancelFetch;
+@end
+
 typedef void(^WZImageFetchCompletionBlock)(UIImage *, NSError *);
 
 @interface WZImageManager : NSObject
 
 + (WZImageManager *)sharedManager;
-- (void)fetchImageWithURL:(NSURL *)URL
+- (WZImageManagerFetchOperation *)fetchImageWithURL:(NSURL *)URL
                decompress:(BOOL)decompress
                  progress:(WZImageDownloadProgressBlock)progress
                   success:(WZImageFetchCompletionBlock)completion

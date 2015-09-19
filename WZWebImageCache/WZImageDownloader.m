@@ -52,6 +52,11 @@ const NSUInteger WZImageDownloaderDefaultCapacity = 4;
     return operation;
 }
 
+- (void)addOperation:(WZImageDownloadOperation *)operation
+{
+    [self.downloadingQueue addOperation:operation];
+}
+
 - (void)cancelAllTasks
 {
     for (WZImageDownloadOperation *operation in self.downloadingQueue.operations) {
