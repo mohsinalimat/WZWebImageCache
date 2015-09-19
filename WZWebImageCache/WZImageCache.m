@@ -81,12 +81,7 @@ static NSInteger const WZCacheDefaultMaxAge = 60 * 60 * 24 * 7; // 1 week
     return result;
 }
 
-- (void)saveImage:(UIImage *)image forKey:(NSString *)key
-{
-    [self saveImage:image forKey:key autoCache:NO];
-}
-
-- (void)saveImage:(UIImage *)image forKey:(NSString *)key autoCache:(BOOL)cache
+- (void)saveImage:(UIImage *)image forKey:(NSString *)key autoCache:(BOOL)cache completionBlock:(WZSaveImageCompletionBlock)saveBlock
 {
     if (cache) {
         [self cacheImage:image forKey:key];
@@ -102,7 +97,19 @@ static NSInteger const WZCacheDefaultMaxAge = 60 * 60 * 24 * 7; // 1 week
         
         NSString *filePath = [self filePathInDiskForKey:key];
         [[NSFileManager defaultManager] createFileAtPath:filePath contents:[image dataFromImage] attributes:nil];
+        
+        if (saveBlock) saveBlock(filePath);
     });
+}
+
+- (void)saveImage:(UIImage *)image forKey:(NSString *)key
+{
+    [self saveImage:image forKey:key autoCache:NO];
+}
+
+- (void)saveImage:(UIImage *)image forKey:(NSString *)key autoCache:(BOOL)cache
+{
+    [self saveImage:image forKey:key autoCache:cache completionBlock:nil];
 }
 
 - (void)cacheImage:(UIImage *)image forKey:(NSString *)key
@@ -120,6 +127,12 @@ static NSInteger const WZCacheDefaultMaxAge = 60 * 60 * 24 * 7; // 1 week
     dispatch_async(self.diskQueue, ^{
         [[NSFileManager defaultManager] removeItemAtPath:[self filePathInDiskForKey:key] error:nil];
     });
+}
+
+- (void)removeImageForKey:(NSString *)key
+{
+    [self removeImageInCacheForKey:key];
+    [self removeImageInDiskForKey:key];
 }
 
 - (void)cleanCache

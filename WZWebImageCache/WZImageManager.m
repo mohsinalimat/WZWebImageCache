@@ -34,6 +34,7 @@
     if (image) {
         if (completion) {
             completion(image, nil);
+            return;
         }
     }
     
@@ -45,8 +46,9 @@
                                               UIImage *decodedImage = decompress ? [image decodedImage] : image;
                                               [[WZImageCache sharedImageCache] saveImage:image
                                                                                   forKey:URL.absoluteString
-                                                                               autoCache:YES];
-                                              
+                                                                               autoCache:YES completionBlock:^(NSString *filePath) {
+                                                                                   NSLog(@"filePath is %@", filePath);
+                                                                               }];
                                               if (completion) completion(decodedImage, nil);
                                           } failure:failure];
 }

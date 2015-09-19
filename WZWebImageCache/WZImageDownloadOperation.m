@@ -34,6 +34,10 @@
         self.successBlock = successBlock;
         self.failureBlock = failureBlock;
         
+        self.request = [NSMutableURLRequest requestWithURL:self.imageURL
+                                               cachePolicy:NSURLRequestUseProtocolCachePolicy
+                                           timeoutInterval:30];
+        
         self.status = WZImageDownloadOperationStatusReady;
         self.receivedLength = 0.0;
         self.expectedLength = 0.0;
@@ -82,7 +86,7 @@
     return YES;
 }
 
-- (void)setStatus:(WZImageDownloadOperationStatus)status
+- (void)updateStatus:(WZImageDownloadOperationStatus)status
 {
     [self.connection cancel];
     
@@ -99,7 +103,7 @@
 {
     if (![NSURLConnection canHandleRequest:self.request]) {
         NSError *error = [NSError errorWithDomain:@"com.satanwoo.url.error" code:1 userInfo:nil];
-        self.status = WZImageDownloadOperationStatusFailed;
+        [self updateStatus:WZImageDownloadOperationStatusFailed];
         if (self.failureBlock) self.failureBlock(error);
 
         return;
@@ -113,7 +117,10 @@
         return;
     }
     
+    [self willChangeValueForKey:@"isExecuting"];
     self.status = WZImageDownloadOperationStatusDownloading;
+    [self didChangeValueForKey:@"isExecuting"];
+    
     self.receivedData = [[NSMutableData alloc] init];
     
     NSRunLoop* runLoop = [NSRunLoop currentRunLoop];
@@ -154,10 +161,7 @@
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
 {
-    if (data) {
-        [self.receivedData appendData:data];
-    }
-    
+    [self.receivedData appendData:data];
     self.receivedLength += [data length];
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -170,7 +174,7 @@
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
     if ([self isExecuting]) {
-        self.status = WZImageDownloadOperationStatusDone;
+        [self updateStatus:WZImageDownloadOperationStatusDone];
         
         if (self.successBlock) {
             self.successBlock(self.receivedData);

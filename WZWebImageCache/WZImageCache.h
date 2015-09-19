@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 
 typedef void(^WZFindImageCompletionBlock) (UIImage *);
-typedef void(^WZSaveImageCompletionBlock) (NSURL *saveURL);
+typedef void(^WZSaveImageCompletionBlock) (NSString *filePath);
 
 @interface WZImageCache : NSObject
 
@@ -21,11 +21,15 @@ typedef void(^WZSaveImageCompletionBlock) (NSURL *saveURL);
 - (instancetype)initWithDiskDirectoryName:(NSString *)name;
 
 - (UIImage *)getImageForKey:(NSString *)key;
+- (void)saveImage:(UIImage *)image
+           forKey:(NSString *)key
+        autoCache:(BOOL)cache
+  completionBlock:(WZSaveImageCompletionBlock)saveBlock;
 
 - (void)saveImage:(UIImage *)image forKey:(NSString *)key;
 - (void)saveImage:(UIImage *)image forKey:(NSString *)key autoCache:(BOOL)cache;
-- (void)cacheImage:(UIImage *)image forKey:(NSString *)key;
 
+- (void)removeImageForKey:(NSString *)key;
 - (void)removeImageInCacheForKey:(NSString *)key;
 - (void)removeImageInDiskForKey:(NSString *)key;
 
